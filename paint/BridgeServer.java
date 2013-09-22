@@ -1,4 +1,4 @@
-package draw;
+package paint;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServer;

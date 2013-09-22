@@ -1,4 +1,4 @@
-package draw;
+package paint;
 
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
