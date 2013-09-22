@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<head>
+  <title>Partner Paint</title>
+  <style>
+   html, body {
+     width:  100%;
+     height: 100%;
+     margin: 0px;
+     overflow: hidden;	
+	 background-color: green;
+   }
+  </style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+</head>
+<body>
+	<div id="container">
+		<canvas id="mainCanvas" width="850" height="500"
+		  style="border: 2px solid rgb(84,84,84); cursor: pointer; background-color: rgb(255,255,255); background-position: initial initial; background-repeat: initial initial;">
+		
+	</div>
+  <script>
+    var isDrawing = false;
+	var ctx = mainCanvas.getContext('2d');
+	ctx.lineWidth = 4;
+	function beginStroke(event) {
+		// debug(event);
+		isDrawing = true;
+		ctx.beginPath();
+		x = getX(event);
+		y = getY(event);
+		ctx.moveTo(x,y);
+		console.log("begin at " + x + " " + y );
+		event.preventDefault();
+	}
+	function drawStroke(event) {
+		if(isDrawing) {
+			x = getX(event);
+			y = getY(event);
+  			ctx.lineTo(x,y);
+		    ctx.stroke();
+			console.log("stroke to " + x + " " + y);
+		}
+		event.preventDefault();
+	}
+	// Note: the touchend event has no pageX & pageY
+	// the mouseend event does
+	function endStroke(event) {
+		if(isDrawing) {
+	    	ctx.stroke();
+		    ctx.closePath();
+			console.log("END");		
+		    isDrawing = false;
+		    console.log("CANVAS: " + mainCanvas.toDataURL());
+     	}
+		event.preventDefault();
+	}	
+	function getX(event) {
+		if(typeof event.targetTouches[0] === "undefined") {
+			return event.layerX;
+		}
+		else {
+			return event.targetTouches[0].pageX;			
+		}
+	}
+
+	function getY(event) {
+		if(typeof event.targetTouches[0] === "undefined") {
+			return event.layerY;
+		}
+		else {
+			return event.targetTouches[0].pageY;
+		}
+	}	
+
+	function debug(myobject) {
+		console.log("===== " + myobject + " =====");
+		for (var key in myobject) {
+			if (myobject.hasOwnProperty(key))  {
+			  console.log("key: " + key + " value: " + myobject[key]);
+		    }
+		} // for
+	}
+	
+	
+    $(document).ready(function() {
+	    console.log("READY");
+		mainCanvas.addEventListener("touchstart",beginStroke,false);
+		mainCanvas.addEventListener("touchmove",drawStroke,false);
+		mainCanvas.addEventListener("touchend",endStroke,false);
+		
+		mainCanvas.addEventListener("mousedown",beginStroke,false);
+		mainCanvas.addEventListener("mousemove",drawStroke,false);
+		mainCanvas.addEventListener("mouseup",endStroke,false);
+		
+		mainCanvas.addEventListener("mouseout",endStroke,false);		
+    });
+  </script>
+	
+</body>	
+</html>
