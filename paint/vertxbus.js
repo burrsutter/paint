@@ -107,6 +107,11 @@ var vertx = vertx || {};
     that.readyState = function() {
       return state;
     }
+
+    // Burr addition
+		that.makeUUID = function() {
+			return makeUUID();
+		}
   
     sockJSConn.onopen = function() {
       // Send the first ping then send a ping every 5 seconds

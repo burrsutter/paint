@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<head>
+  <title>Everybody</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="http://cdn.sockjs.org/sockjs-0.3.4.min.js"></script>
+  <script src="vertxbus.js"></script>
+  <script src="debug.js"></script>
+</head>
+<body>
+	<div id="header">Header</div>
+	<div id="mainBody">
+	</div>
+	</div id="footer">Footer</div>
+	
+<script>
+  var eb = null;
+  var canvi = {}; // the "array" of Canvas objects, one per unique message.id (sent by the client)
+  var address = "paintAddress";
+  var url = "http://paint-html5.rhcloud.com:8000/eventbus";
+  // 8000 for Openshift websockets
+  // var url = "http://localhost:8000/eventbus";
+  // var url = "http://192.168.1.102:8000/eventbus";
+  // var url = "http://10.192.208.135:8000/eventbus";
+
+  function subscribe(address) {
+    if (eb) {
+      eb.registerHandler(address, function(msg, replyTo) {
+		var message = JSON.parse(msg);
+		console.log("Message ID: " + message.id);
+		console.log("Message Data: " + message.data);	
+		// first see if a canvas alreddy exists, if not create one
+		theCanvas = findAddCanvas(message.id);
+		deserialize(message.data, theCanvas );
+		
+      });
+    }
+  }
+
+function findAddCanvas(id) {
+	if (canvi.hasOwnProperty(id)) {
+		console.log("FOUND Canvas for " + id);
+		return canvi[id];
+	} else {
+		console.log("CREATING Canvas for " + id);
+	    var canvas = document.createElement('canvas');
+
+		canvas.id = id;
+		canvas.width = 100;
+		canvas.height = 100;
+		canvas.style.position = "relative";
+		canvas.style.border = "1px solid";
+	    canvas.style.background = "white";
+
+		// var body = document.getElementsByTagName("body")[0];
+		var body = document.getElementById("mainBody");
+		body.appendChild(canvas);
+
+	    canvi[id] = document.getElementById(id);
+		console.log(canvi[id]);
+		return canvi[id];
+	}
+}
+
+function deserialize(data, canvas) {
+    var img = new Image();
+    img.onload = function() {
+        // canvas.width = img.width;
+        // canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0, img.width * 0.25, img.height * 0.25 );
+    };
+
+    img.src = data;
+}
+
+  function closeConn() {
+    if (eb) {
+      eb.close();
+    }
+  }
+
+  function openConn() {
+    if (!eb) {
+      eb = new vertx.EventBus(url);
+
+      eb.onopen = function() {
+        console.log("Connected");
+      };
+
+      eb.onclose = function() {
+        console.log("Not connected");
+        eb = null;
+      };
+    }
+  }
+
+  $(document).ready(function() {
+	openConn();
+	// openConn needs just a wee bit of time to setup
+	// subscriber/receiver
+	setTimeout(function () {
+    	subscribe(address);
+  	}, 1500);
+
+  });
+
+</script>
+
+</body>	
+</html>

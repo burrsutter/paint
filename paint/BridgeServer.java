@@ -24,16 +24,10 @@ public class BridgeServer extends Verticle {
     server.requestHandler(new Handler<HttpServerRequest>() {
       public void handle(HttpServerRequest req) {
         if (req.path().equals("/")) req.response().sendFile("index.html"); // Serve the index.html
-        if (req.path().equals("/sender")) req.response().sendFile("sender.html"); // Serve the sender.html
+        if (req.path().equals("/receive")) req.response().sendFile("receive.html"); 
+        if (req.path().equals("/canvas_test")) req.response().sendFile("canvas_test.html"); 
         if (req.path().endsWith("vertxbus.js")) req.response().sendFile("vertxbus.js"); // Serve the js
-        if (req.path().endsWith("drawStroke.js")) req.response().sendFile("drawStroke.js"); // Serve the js
-        if (req.path().endsWith("leapLogic.js")) req.response().sendFile("leapLogic.js"); // Serve the js
-        if (req.path().endsWith("leap.js")) req.response().sendFile("leap.js"); // Serve the js
-        if (req.path().endsWith("d3.v3.min.js")) req.response().sendFile("d3.v3.min.js"); // Serve the js
-        if (req.path().endsWith("touchDraw.html")) req.response().sendFile("touchDraw.html"); 
-        if (req.path().endsWith("touchDraw2.html")) req.response().sendFile("touchDraw2.html"); 
-        if (req.path().endsWith("touchDraw3.html")) req.response().sendFile("touchDraw3.html"); 
-        if (req.path().endsWith("touchDraw4.html")) req.response().sendFile("touchDraw4.html"); 
+        if (req.path().endsWith("debug.js")) req.response().sendFile("debug.js"); // Serve the js
       }
     });
 

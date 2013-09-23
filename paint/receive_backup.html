@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<head>
+  <title>Everybody</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="http://cdn.sockjs.org/sockjs-0.3.4.min.js"></script>
+  <script src="vertxbus.js"></script>
+  <script src="debug.js"></script>
+</head>
+<script>
+  var eb = null;
+  var address = "paintAddress";
+  // var url = "http://leap-html5.rhcloud.com:8000/eventbus";
+  // 8000 for Openshift websockets
+  // var url = "http://localhost:8000/eventbus";
+  // var url = "http://192.168.1.102:8000/eventbus";
+ var url = "http://10.192.208.135:8000/eventbus";
+
+  function subscribe(address) {
+    if (eb) {
+      eb.registerHandler(address, function(msg, replyTo) {
+		var message = JSON.parse(msg);
+		// debug(msg);
+		console.log("Message ID: " + message.id);
+		console.log("Message Data: " + message.data);	
+		deserialize(message.data, mainCanvas );
+		
+      });
+    }
+  }
+
+function deserialize(data, canvas) {
+    var img = new Image();
+    img.onload = function() {
+        // canvas.width = img.width;
+        // canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0, img.width * 0.25, img.height * 0.25 );
+    };
+
+    img.src = data;
+}
+
+  function closeConn() {
+    if (eb) {
+      eb.close();
+    }
+  }
+
+  function openConn() {
+    if (!eb) {
+      eb = new vertx.EventBus(url);
+
+      eb.onopen = function() {
+        console.log("Connected");
+      };
+
+      eb.onclose = function() {
+        console.log("Not connected");
+        eb = null;
+      };
+    }
+  }
+
+  $(document).ready(function() {
+	openConn();
+	// openConn needs just a wee bit of time to setup
+	// subscriber/receiver
+	setTimeout(function () {
+    	subscribe(address);
+  	}, 1500);
+
+  });
+
+</script>
+
+<body>
+	<canvas id="mainCanvas" width="850" height="500"
+	  style="border: 2px solid rgb(84,84,84); cursor: pointer; background-color: rgb(255,255,255); background-position: initial initial; background-repeat: initial initial;">
+
+</body>	
+</html>

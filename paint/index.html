@@ -1,28 +1,88 @@
 <!DOCTYPE html>
 <head>
-  <title>Partner Paint</title>
+  <title>Everybody Paint</title>
   <style>
    html, body {
      width:  100%;
      height: 100%;
      margin: 0px;
      overflow: hidden;	
-	 background-color: green;
+	 background-color: black;
+	 forground-color: white;
    }
   </style>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="http://cdn.sockjs.org/sockjs-0.3.4.min.js"></script>
+  <script src="vertxbus.js"></script>
+  <script src="debug.js"></script>
 
 </head>
 <body>
 	<div id="container">
-		<canvas id="mainCanvas" width="850" height="500"
+		<canvas id="mainCanvas" width="400" height="400"
 		  style="border: 2px solid rgb(84,84,84); cursor: pointer; background-color: rgb(255,255,255); background-position: initial initial; background-repeat: initial initial;">
-		
+		stuff
 	</div>
-  <script>
+	<div id="tools">
+		<a href="#" id="clearButton">Clear</a>
+		<a href="#" id="blackButton">Black</a>
+		<a href="#" id="redButton">Red</a>	
+		<a href="#" id="pinkButton">Pink</a>
+		<a href="#" id="greenButton">Green</a>
+		<a href="#" id="yellowButton">Yellow</a>	
+	</div>
+ <script>
+  var eb = null;
+  var address = "paintAddress";
+  var myUUID = null;
+  var url = "http://paint-html5.rhcloud.com:8000/eventbus";
+  // var url = "http://localhost:8000/eventbus";
+  // var url = "http://192.168.1.102:8000/eventbus";
+  // var url = "http://10.192.208.135:8000/eventbus";
+ var strokeColor = "#000000";
+
     var isDrawing = false;
 	var ctx = mainCanvas.getContext('2d');
 	ctx.lineWidth = 4;
+	
+    $('#clearButton').click(function(e) {
+		e.preventDefault();
+		console.log("Clear Clicked");
+        ctx.beginPath();
+		ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect( 0, 0, mainCanvas.width, mainCanvas.height );
+        ctx.closePath();
+		sendCanvas();
+	});
+	
+    $('#blackButton').click(function(e) {
+		e.preventDefault();
+		console.log("Black Clicked");
+		strokeColor = "#000000";
+	});
+    $('#redButton').click(function(e) {
+		e.preventDefault();
+		console.log("Red Clicked");
+		strokeColor = "#FE0001";
+	});
+    $('#pinkButton').click(function(e) {
+		e.preventDefault();
+		console.log("Pink Clicked");
+		strokeColor = "#FF0066";
+	});
+    $('#greenButton').click(function(e) {
+		e.preventDefault();
+		console.log("Green Clicked");
+		strokeColor = "#00FF00";
+	});
+    $('#yellowButton').click(function(e) {
+		e.preventDefault();
+		console.log("Yellow Clicked");
+		strokeColor = "#FFFF00";
+	});
+	
+	
 	function beginStroke(event) {
 		// debug(event);
 		isDrawing = true;
@@ -30,7 +90,7 @@
 		x = getX(event);
 		y = getY(event);
 		ctx.moveTo(x,y);
-		console.log("begin at " + x + " " + y );
+		console.log("BEGIN at " + x + " " + y );
 		event.preventDefault();
 	}
 	function drawStroke(event) {
@@ -38,8 +98,9 @@
 			x = getX(event);
 			y = getY(event);
   			ctx.lineTo(x,y);
+			ctx.strokeStyle = strokeColor;
 		    ctx.stroke();
-			console.log("stroke to " + x + " " + y);
+			console.log("STROKE to " + x + " " + y);
 		}
 		event.preventDefault();
 	}
@@ -51,10 +112,22 @@
 		    ctx.closePath();
 			console.log("END");		
 		    isDrawing = false;
-		    console.log("CANVAS: " + mainCanvas.toDataURL());
+		    sendCanvas();
      	}
 		event.preventDefault();
 	}	
+	
+	function sendCanvas() {
+	    var msg = {
+			'id' : myUUID,
+			'data': mainCanvas.toDataURL("image/png")
+	    }
+	    msgAsString = JSON.stringify(msg);
+	    console.log("CANVAS: " + msgAsString);
+	
+		publish(address, msgAsString);		
+	}
+	
 	function getX(event) {
 		if(typeof event.targetTouches[0] === "undefined") {
 			return event.layerX;
@@ -73,18 +146,40 @@
 		}
 	}	
 
-	function debug(myobject) {
-		console.log("===== " + myobject + " =====");
-		for (var key in myobject) {
-			if (myobject.hasOwnProperty(key))  {
-			  console.log("key: " + key + " value: " + myobject[key]);
-		    }
-		} // for
-	}
+  function publish(address,  message) {
+    if (eb) {
+      eb.publish(address, message);
+	  // console.log("published: " + message);
+    }
+  }
+
+  function closeConn() {
+    if (eb) {
+      eb.close();
+    }
+  }
+
+  function openConn() {
+    if (!eb) {
+      eb = new vertx.EventBus(url);
+
+      eb.onopen = function() {
+		myUUID = eb.makeUUID();
+        console.log("Connected " + myUUID);
+
+      };
+
+      eb.onclose = function() {
+        console.log("Not connected");
+        eb = null;
+      };
+    }
+  }
 	
 	
     $(document).ready(function() {
-	    console.log("READY");
+		openConn();
+
 		mainCanvas.addEventListener("touchstart",beginStroke,false);
 		mainCanvas.addEventListener("touchmove",drawStroke,false);
 		mainCanvas.addEventListener("touchend",endStroke,false);
@@ -93,7 +188,9 @@
 		mainCanvas.addEventListener("mousemove",drawStroke,false);
 		mainCanvas.addEventListener("mouseup",endStroke,false);
 		
-		mainCanvas.addEventListener("mouseout",endStroke,false);		
+		mainCanvas.addEventListener("mouseout",endStroke,false);	
+	    console.log("READY");			
+	
     });
   </script>
 	
