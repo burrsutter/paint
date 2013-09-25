@@ -129,7 +129,7 @@
 	}
 	
 	function getX(event) {
-		if(typeof event.targetTouches[0] === "undefined") {
+		if(!event.targetTouches && typeof event.targetTouches[0] === "undefined") {
 			return event.layerX;
 		}
 		else {
@@ -138,7 +138,7 @@
 	}
 
 	function getY(event) {
-		if(typeof event.targetTouches[0] === "undefined") {
+		if(!event.targetTouches && typeof event.targetTouches[0] === "undefined") {
 			return event.layerY;
 		}
 		else {
