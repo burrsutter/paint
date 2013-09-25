@@ -90,7 +90,7 @@
 		x = getX(event);
 		y = getY(event);
 		ctx.moveTo(x,y);
-		console.log("BEGIN at " + x + " " + y );
+		// console.log("BEGIN at " + x + " " + y );
 		event.preventDefault();
 	}
 	function drawStroke(event) {
@@ -100,7 +100,7 @@
   			ctx.lineTo(x,y);
 			ctx.strokeStyle = strokeColor;
 		    ctx.stroke();
-			console.log("STROKE to " + x + " " + y);
+			// console.log("STROKE to " + x + " " + y);
 		}
 		event.preventDefault();
 	}
@@ -110,7 +110,7 @@
 		if(isDrawing) {
 	    	ctx.stroke();
 		    ctx.closePath();
-			console.log("END");		
+			// console.log("END");		
 		    isDrawing = false;
 		    sendCanvas();
      	}
@@ -123,7 +123,7 @@
 			'data': mainCanvas.toDataURL("image/png")
 	    }
 	    msgAsString = JSON.stringify(msg);
-	    console.log("CANVAS: " + msgAsString);
+	    // console.log("CANVAS: " + msgAsString);
 	
 		publish(address, msgAsString);		
 	}
